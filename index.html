@@ -208,20 +208,26 @@
                     },
                     {
                       type: 'text',
-                      text: `Extract the following information from this food delivery order screenshot and return ONLY valid JSON with no preamble or markdown:
+                      text: `You are a data extraction assistant. Extract information from this food delivery order screenshot.
 
+CRITICAL: You must respond with ONLY a valid JSON object. No explanations, no markdown, no preamble, no code blocks. Just the raw JSON.
+
+Extract these fields:
+- restaurant: name of the restaurant
+- platform: "DoorDash", "Uber Eats", or the app name
+- orderDate: format as YYYY-MM-DD (use today's date if not visible: ${new Date().toISOString().split('T')[0]})
+- location: city/address if visible, or "Unknown" if not
+- items: array of items ordered
+- subtotal, tax, deliveryFee, tip, total: all prices as numbers
+
+JSON format (respond with this exact structure):
 {
-  "restaurant": "Restaurant Name",
-  "platform": "DoorDash/Uber Eats/App Name",
+  "restaurant": "string",
+  "platform": "string",
   "orderDate": "YYYY-MM-DD",
-  "location": "City, State or Address if visible",
+  "location": "string",
   "items": [
-    {
-      "name": "Item Name",
-      "price": 0.00,
-      "rating": 0,
-      "notes": ""
-    }
+    {"name": "string", "price": 0.00, "rating": 0, "notes": ""}
   ],
   "subtotal": 0.00,
   "tax": 0.00,
@@ -257,23 +263,78 @@
               const text = data.content.find(c => c.type === 'text')?.text || '';
               console.log('Extracted text:', text);
               
-              const jsonMatch = text.match(/\{[\s\S]*\}/);
+              // Try multiple parsing strategies
+              let extracted = null;
               
-              if (jsonMatch) {
-                const extracted = JSON.parse(jsonMatch[0]);
-                setNewOrder({
-                  ...extracted,
-                  id: Date.now().toString(),
-                  addedBy: currentUser,
-                  items: extracted.items.map(item => ({
+              // Strategy 1: Direct JSON parse
+              try {
+                extracted = JSON.parse(text);
+              } catch (e) {
+                console.log('Direct parse failed, trying alternatives...');
+              }
+              
+              // Strategy 2: Remove markdown code blocks
+              if (!extracted) {
+                try {
+                  const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                  extracted = JSON.parse(cleaned);
+                } catch (e) {
+                  console.log('Markdown removal failed, trying regex...');
+                }
+              }
+              
+              // Strategy 3: Find JSON with regex
+              if (!extracted) {
+                try {
+                  const jsonMatch = text.match(/\{[\s\S]*\}/);
+                  if (jsonMatch) {
+                    extracted = JSON.parse(jsonMatch[0]);
+                  }
+                } catch (e) {
+                  console.log('Regex extraction failed');
+                }
+              }
+              
+              if (extracted) {
+                // Ensure all required fields exist
+                const orderData = {
+                  restaurant: extracted.restaurant || 'Unknown Restaurant',
+                  platform: extracted.platform || 'Unknown Platform',
+                  orderDate: extracted.orderDate || new Date().toISOString().split('T')[0],
+                  location: extracted.location || 'Unknown Location',
+                  items: (extracted.items || []).map(item => ({
                     ...item,
-                    id: Math.random().toString(36).substr(2, 9)
-                  }))
-                });
+                    id: Math.random().toString(36).substr(2, 9),
+                    price: parseFloat(item.price) || 0,
+                    rating: item.rating || 0,
+                    notes: item.notes || ''
+                  })),
+                  subtotal: parseFloat(extracted.subtotal) || 0,
+                  tax: parseFloat(extracted.tax) || 0,
+                  deliveryFee: parseFloat(extracted.deliveryFee) || 0,
+                  tip: parseFloat(extracted.tip) || 0,
+                  total: parseFloat(extracted.total) || 0,
+                  id: Date.now().toString(),
+                  addedBy: currentUser
+                };
+                
+                // Ensure at least one item exists
+                if (orderData.items.length === 0) {
+                  orderData.items.push({
+                    id: '1',
+                    name: 'Item 1',
+                    price: 0,
+                    rating: 0,
+                    notes: ''
+                  });
+                }
+                
+                setNewOrder(orderData);
                 setView('review-order');
               } else {
                 console.error('No JSON found in response');
-                throw new Error('Could not find valid JSON in response');
+                console.error('Full response text:', text);
+                throw new Error('Could not parse the AI response. The image may not be clear enough.');
               }
             } catch (error) {
               console.error('Extraction error:', error);
@@ -283,14 +344,20 @@
               
               if (error.message.includes('API Error')) {
                 errorMessage += error.message;
-              } else if (error.message.includes('JSON')) {
-                errorMessage += 'The AI response could not be parsed. Please try again or enter manually.';
+              } else if (error.message.includes('parse') || error.message.includes('JSON')) {
+                errorMessage += 'The AI response could not be parsed. ';
+                errorMessage += 'This usually means the image is unclear or not a food order screenshot. ';
+                errorMessage += 'Please try a clearer image or enter manually.';
+              } else if (error.message.includes('clear enough')) {
+                errorMessage += error.message;
               } else {
                 errorMessage += 'Please check your API key and internet connection, then try again.';
               }
               
               alert(errorMessage);
-              setUploadedImage(null);
+              
+              // Keep the image visible for retry
+              // setUploadedImage(null);
             } finally {
               setExtracting(false);
             }
@@ -570,7 +637,42 @@ User message: ${chatInput}`
 
                   {uploadedImage && !extracting && (
                     <div className="mt-6">
-                      <img src={uploadedImage} alt="Uploaded order" className="rounded-lg max-h-64 mx-auto" />
+                      <img src={uploadedImage} alt="Uploaded order" className="rounded-lg max-h-64 mx-auto mb-4" />
+                      <div className="flex gap-3 justify-center">
+                        <button
+                          onClick={() => {
+                            const fileInput = document.getElementById('image-upload');
+                            if (fileInput.files[0]) {
+                              handleImageUpload({ target: fileInput });
+                            }
+                          }}
+                          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold"
+                        >
+                          Retry Extraction
+                        </button>
+                        <button
+                          onClick={() => {
+                            setNewOrder({
+                              id: Date.now().toString(),
+                              restaurant: '',
+                              platform: '',
+                              orderDate: new Date().toISOString().split('T')[0],
+                              location: '',
+                              items: [{ id: '1', name: '', price: 0, rating: 0, notes: '' }],
+                              subtotal: 0,
+                              tax: 0,
+                              deliveryFee: 0,
+                              tip: 0,
+                              total: 0,
+                              addedBy: currentUser
+                            });
+                            setView('review-order');
+                          }}
+                          className="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold"
+                        >
+                          Enter Manually Instead
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
