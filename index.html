@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yummy Food Time</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const Camera = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                <circle cx="12" cy="13" r="3"></circle>
+            </svg>
+        );
+        
+        const Plus = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        );
+        
+        const MessageCircle = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+        );
+        
+        const Search = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+        );
+        
+        const Star = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+        );
+        
+        const MapPin = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+        );
+        
+        const ExternalLink = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+        );
+        
+        const User = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        );
+        
+        const Upload = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+        );
+        
+        const X = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        );
+        
+        const Menu = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        );
+        
+        const Utensils = ({ className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
+                <path d="M7 2v20"></path>
+                <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path>
+            </svg>
+        );
+
+        const YummyFoodTime = () => {
+          const [currentUser, setCurrentUser] = useState('Collin');
+          const [orders, setOrders] = useState([]);
+          const [view, setView] = useState('home');
+          const [selectedOrder, setSelectedOrder] = useState(null);
+          const [uploadedImage, setUploadedImage] = useState(null);
+          const [extracting, setExtracting] = useState(false);
+          const [chatMessages, setChatMessages] = useState([]);
+          const [chatInput, setChatInput] = useState('');
+          const [chatLoading, setChatLoading] = useState(false);
+          const [searchTerm, setSearchTerm] = useState('');
+          const [newOrder, setNewOrder] = useState(null);
+
+          useEffect(() => {
+            loadOrders();
+          }, []);
+
+          const loadOrders = async () => {
+            try {
+              const result = await window.storage.get('yummy-orders', true);
+              if (result && result.value) {
+                setOrders(JSON.parse(result.value));
+              }
+            } catch (error) {
+              console.log('No existing orders found, starting fresh');
+            }
+          };
+
+          const saveOrders = async (updatedOrders) => {
+            try {
+              await window.storage.set('yummy-orders', JSON.stringify(updatedOrders), true);
+              setOrders(updatedOrders);
+            } catch (error) {
+              console.error('Failed to save orders:', error);
+              alert('Failed to save order. Please try again.');
+            }
+          };
+
+          const handleImageUpload = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            setExtracting(true);
+            setUploadedImage(URL.createObjectURL(file));
+
+            try {
+              const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              });
+
+              const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  model: 'claude-sonnet-4-20250514',
+                  max_tokens: 1000,
+                  messages: [{
+                    role: 'user',
+                    content: [
+                      {
+                        type: 'image',
+                        source: {
+                          type: 'base64',
+                          media_type: file.type,
+                          data: base64
+                        }
+                      },
+                      {
+                        type: 'text',
+                        text: `Extract the following information from this food delivery order screenshot and return ONLY valid JSON with no preamble or markdown:
+
+{
+  "restaurant": "Restaurant Name",
+  "platform": "DoorDash/Uber Eats/App Name",
+  "orderDate": "YYYY-MM-DD",
+  "location": "City, State or Address if visible",
+  "items": [
+    {
+      "name": "Item Name",
+      "price": 0.00,
+      "rating": 0,
+      "notes": ""
+    }
+  ],
+  "subtotal": 0.00,
+  "tax": 0.00,
+  "deliveryFee": 0.00,
+  "tip": 0.00,
+  "total": 0.00
+}`
+                      }
+                    ]
+                  }]
+                })
+              });
+
+              const data = await response.json();
+              const text = data.content.find(c => c.type === 'text')?.text || '';
+              const jsonMatch = text.match(/\{[\s\S]*\}/);
+              
+              if (jsonMatch) {
+                const extracted = JSON.parse(jsonMatch[0]);
+                setNewOrder({
+                  ...extracted,
+                  id: Date.now().toString(),
+                  addedBy: currentUser,
+                  items: extracted.items.map(item => ({
+                    ...item,
+                    id: Math.random().toString(36).substr(2, 9)
+                  }))
+                });
+                setView('review-order');
+              } else {
+                alert('Could not extract order information. Please try again or enter manually.');
+              }
+            } catch (error) {
+              console.error('Extraction error:', error);
+              alert('Failed to extract order information. Please try again.');
+            } finally {
+              setExtracting(false);
+            }
+          };
+
+          const saveNewOrder = async () => {
+            const updatedOrders = [...orders, newOrder];
+            await saveOrders(updatedOrders);
+            setNewOrder(null);
+            setUploadedImage(null);
+            setView('history');
+          };
+
+          const updateItemRating = (orderId, itemId, rating) => {
+            const updatedOrders = orders.map(order => {
+              if (order.id === orderId) {
+                return {
+                  ...order,
+                  items: order.items.map(item => 
+                    item.id === itemId ? { ...item, rating } : item
+                  )
+                };
+              }
+              return order;
+            });
+            saveOrders(updatedOrders);
+          };
+
+          const updateItemNotes = (orderId, itemId, notes) => {
+            const updatedOrders = orders.map(order => {
+              if (order.id === orderId) {
+                return {
+                  ...order,
+                  items: order.items.map(item => 
+                    item.id === itemId ? { ...item, notes } : item
+                  )
+                };
+              }
+              return order;
+            });
+            saveOrders(updatedOrders);
+          };
+
+          const sendChatMessage = async () => {
+            if (!chatInput.trim()) return;
+
+            const userMessage = { role: 'user', content: chatInput };
+            setChatMessages(prev => [...prev, userMessage]);
+            setChatInput('');
+            setChatLoading(true);
+
+            try {
+              const orderContext = orders.map(order => ({
+                restaurant: order.restaurant,
+                platform: order.platform,
+                location: order.location,
+                items: order.items.map(item => ({
+                  name: item.name,
+                  price: item.price,
+                  rating: item.rating || 0
+                })),
+                addedBy: order.addedBy
+              }));
+
+              const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  model: 'claude-sonnet-4-20250514',
+                  max_tokens: 1000,
+                  messages: [
+                    {
+                      role: 'user',
+                      content: `You are a helpful food recommendation assistant for Collin and Emily's order history app called "Yummy Food Time".
+
+Here is their complete order history:
+${JSON.stringify(orderContext, null, 2)}
+
+Based on their order history, help them decide what to order. You can:
+- Recommend restaurants they've ordered from before
+- Suggest specific items they've rated highly
+- Consider their preferences and patterns
+- If they ask about something they haven't tried, you can suggest it if it might be available at one of their restaurants (but note they haven't tried it yet)
+
+Current user: ${currentUser}
+
+User message: ${chatInput}`
+                    }
+                  ]
+                })
+              });
+
+              const data = await response.json();
+              const assistantMessage = {
+                role: 'assistant',
+                content: data.content.find(c => c.type === 'text')?.text || 'Sorry, I had trouble processing that.'
+              };
+              
+              setChatMessages(prev => [...prev, assistantMessage]);
+            } catch (error) {
+              console.error('Chat error:', error);
+              setChatMessages(prev => [...prev, {
+                role: 'assistant',
+                content: 'Sorry, I encountered an error. Please try again.'
+              }]);
+            } finally {
+              setChatLoading(false);
+            }
+          };
+
+          const filteredOrders = orders.filter(order => 
+            order.restaurant.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            order.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+          );
+
+          const renderHome = () => (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl p-8 text-white">
+                <h1 className="text-4xl font-bold mb-2">🍕 Yummy Food Time</h1>
+                <p className="text-lg opacity-90">What are we eating today?</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  onClick={() => setView('upload')}
+                  className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all border-2 border-gray-100"
+                >
+                  <Upload className="w-12 h-12 text-orange-500 mb-3" />
+                  <h3 className="text-xl font-bold mb-2">Upload Order</h3>
+                  <p className="text-gray-600">Scan your receipt</p>
+                </button>
+
+                <button
+                  onClick={() => setView('chat')}
+                  className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all border-2 border-gray-100"
+                >
+                  <MessageCircle className="w-12 h-12 text-pink-500 mb-3" />
+                  <h3 className="text-xl font-bold mb-2">Ask Assistant</h3>
+                  <p className="text-gray-600">Get recommendations</p>
+                </button>
+
+                <button
+                  onClick={() => setView('history')}
+                  className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all border-2 border-gray-100"
+                >
+                  <Utensils className="w-12 h-12 text-purple-500 mb-3" />
+                  <h3 className="text-xl font-bold mb-2">Order History</h3>
+                  <p className="text-gray-600">View past orders</p>
+                </button>
+              </div>
+
+              {orders.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Recent Orders</h2>
+                  <div className="space-y-3">
+                    {orders.slice(-3).reverse().map(order => (
+                      <div
+                        key={order.id}
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setView('detail');
+                        }}
+                        className="bg-white rounded-xl p-4 shadow hover:shadow-lg transition-all cursor-pointer"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-lg font-bold">{order.restaurant}</h3>
+                            <p className="text-sm text-gray-600">{order.platform}</p>
+                          </div>
+                          <span className="text-sm text-gray-500">{order.addedBy}</span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="w-4 h-4" />
+                          {order.location}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+
+          const renderUpload = () => (
+            <div className="max-w-2xl mx-auto">
+              <button
+                onClick={() => setView('home')}
+                className="mb-4 text-gray-600 hover:text-gray-900"
+              >
+                ← Back
+              </button>
+
+              <div className="bg-white rounded-xl p-8 shadow-lg">
+                <h2 className="text-2xl font-bold mb-6">Upload Order Screenshot</h2>
+                
+                <div className="border-4 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                    disabled={extracting}
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    {extracting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mb-4"></div>
+                        <p className="text-lg font-semibold">Extracting order details...</p>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-16 h-16 text-gray-400 mb-4" />
+                        <p className="text-lg font-semibold mb-2">Click to upload</p>
+                        <p className="text-sm text-gray-500">DoorDash, Uber Eats, or app screenshots</p>
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                {uploadedImage && !extracting && (
+                  <div className="mt-6">
+                    <img src={uploadedImage} alt="Uploaded order" className="rounded-lg max-h-64 mx-auto" />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+
+          const renderReviewOrder = () => (
+            <div className="max-w-3xl mx-auto">
+              <div className="bg-white rounded-xl p-8 shadow-lg">
+                <h2 className="text-2xl font-bold mb-6">Review Order Details</h2>
+                
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Restaurant</label>
+                    <input
+                      type="text"
+                      value={newOrder?.restaurant || ''}
+                      onChange={(e) => setNewOrder({ ...newOrder, restaurant: e.target.value })}
+                      className="w-full p-3 border rounded-lg"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Platform</label>
+                      <input
+                        type="text"
+                        value={newOrder?.platform || ''}
+                        onChange={(e) => setNewOrder({ ...newOrder, platform: e.target.value })}
+                        className="w-full p-3 border rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Date</label>
+                      <input
+                        type="date"
+                        value={newOrder?.orderDate || ''}
+                        onChange={(e) => setNewOrder({ ...newOrder, orderDate: e.target.value })}
+                        className="w-full p-3 border rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Location</label>
+                    <input
+                      type="text"
+                      value={newOrder?.location || ''}
+                      onChange={(e) => setNewOrder({ ...newOrder, location: e.target.value })}
+                      className="w-full p-3 border rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <h3 className="text-xl font-bold mb-4">Items</h3>
+                <div className="space-y-3 mb-6">
+                  {newOrder?.items.map((item, index) => (
+                    <div key={item.id} className="p-4 bg-gray-50 rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) => {
+                            const updated = { ...newOrder };
+                            updated.items[index].name = e.target.value;
+                            setNewOrder(updated);
+                          }}
+                          className="flex-1 p-2 border rounded mr-2"
+                        />
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={item.price}
+                          onChange={(e) => {
+                            const updated = { ...newOrder };
+                            updated.items[index].price = parseFloat(e.target.value);
+                            setNewOrder(updated);
+                          }}
+                          className="w-24 p-2 border rounded"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <h3 className="text-xl font-bold mb-4">Order Total</h3>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2 mb-6">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newOrder?.subtotal || 0}
+                      onChange={(e) => setNewOrder({ ...newOrder, subtotal: parseFloat(e.target.value) })}
+                      className="w-24 p-1 border rounded text-right"
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tax:</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newOrder?.tax || 0}
+                      onChange={(e) => setNewOrder({ ...newOrder, tax: parseFloat(e.target.value) })}
+                      className="w-24 p-1 border rounded text-right"
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Delivery Fee:</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newOrder?.deliveryFee || 0}
+                      onChange={(e) => setNewOrder({ ...newOrder, deliveryFee: parseFloat(e.target.value) })}
+                      className="w-24 p-1 border rounded text-right"
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tip:</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newOrder?.tip || 0}
+                      onChange={(e) => setNewOrder({ ...newOrder, tip: parseFloat(e.target.value) })}
+                      className="w-24 p-1 border rounded text-right"
+                    />
+                  </div>
+                  <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                    <span>Total:</span>
+                    <span>${newOrder?.total?.toFixed(2) || '0.00'}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      setNewOrder(null);
+                      setUploadedImage(null);
+                      setView('upload');
+                    }}
+                    className="flex-1 py-3 border-2 border-gray-300 rounded-lg font-semibold hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveNewOrder}
+                    className="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600"
+                  >
+                    Save Order
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+
+          const renderHistory = () => (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Order History</h2>
+                <button
+                  onClick={() => setView('home')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  ← Back
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search restaurants or items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {filteredOrders.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Utensils className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p>No orders found</p>
+                  </div>
+                ) : (
+                  filteredOrders.map(order => (
+                    <div
+                      key={order.id}
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setView('detail');
+                      }}
+                      className="bg-white rounded-xl p-6 shadow hover:shadow-lg transition-all cursor-pointer"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold">{order.restaurant}</h3>
+                          <p className="text-gray-600">{order.platform}</p>
+                          <p className="text-sm text-gray-500 mt-1">{order.orderDate}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-orange-500">${order.total?.toFixed(2)}</p>
+                          <p className="text-sm text-gray-500">by {order.addedBy}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="w-4 h-4" />
+                        {order.location}
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-sm text-gray-600">{order.items.length} items</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+
+          const renderDetail = () => {
+            if (!selectedOrder) return null;
+
+            return (
+              <div>
+                <button
+                  onClick={() => setView('history')}
+                  className="mb-4 text-gray-600 hover:text-gray-900"
+                >
+                  ← Back to History
+                </button>
+
+                <div className="bg-white rounded-xl p-8 shadow-lg">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h2 className="text-3xl font-bold mb-2">{selectedOrder.restaurant}</h2>
+                      <p className="text-gray-600 text-lg">{selectedOrder.platform}</p>
+                      <p className="text-sm text-gray-500 mt-2">{selectedOrder.orderDate}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-orange-500">${selectedOrder.total?.toFixed(2)}</p>
+                      <p className="text-sm text-gray-500 mt-1">Added by {selectedOrder.addedBy}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-6 text-gray-600">
+                    <MapPin className="w-5 h-5" />
+                    <span>{selectedOrder.location}</span>
+                    <a
+                      href={`https://www.google.com/search?q=${encodeURIComponent(selectedOrder.restaurant + ' ' + selectedOrder.location + ' menu')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-4 text-blue-500 hover:text-blue-600 flex items-center gap-1"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      View Menu
+                    </a>
+                  </div>
+
+                  <h3 className="text-xl font-bold mb-4">Items Ordered</h3>
+                  <div className="space-y-4 mb-6">
+                    {selectedOrder.items.map(item => (
+                      <div key={item.id} className="p-4 bg-gray-50 rounded-lg">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-lg">{item.name}</h4>
+                            <p className="text-gray-600">${item.price?.toFixed(2)}</p>
+                          </div>
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <Star
+                                key={star}
+                                className={`w-6 h-6 cursor-pointer ${
+                                  star <= (item.rating || 0)
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                                onClick={() => updateItemRating(selectedOrder.id, item.id, star)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <textarea
+                          placeholder="Add notes..."
+                          value={item.notes || ''}
+                          onChange={(e) => updateItemNotes(selectedOrder.id, item.id, e.target.value)}
+                          className="w-full p-2 border rounded text-sm"
+                          rows="2"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-gray-100 rounded-lg p-6">
+                    <h3 className="text-lg font-bold mb-4">Order Breakdown</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span>${selectedOrder.subtotal?.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Tax:</span>
+                        <span>${selectedOrder.tax?.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Delivery Fee:</span>
+                        <span>${selectedOrder.deliveryFee?.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Tip:</span>
+                        <span>${selectedOrder.tip?.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-xl pt-3 border-t border-gray-300">
+                        <span>Total:</span>
+                        <span className="text-orange-500">${selectedOrder.total?.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          };
+
+          const renderChat = () => (
+            <div className="max-w-3xl mx-auto">
+              <button
+                onClick={() => setView('home')}
+                className="mb-4 text-gray-600 hover:text-gray-900"
+              >
+                ← Back
+              </button>
+
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col" style={{ height: '600px' }}>
+                <div className="bg-gradient-to-r from-orange-500 to-pink-500 p-6 text-white">
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <MessageCircle className="w-7 h-7" />
+                    Food Assistant
+                  </h2>
+                  <p className="text-sm opacity-90 mt-1">Ask me what you should order!</p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {chatMessages.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-12">
+                      <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg mb-2">What are you craving?</p>
+                      <p className="text-sm">Ask me for suggestions based on your order history!</p>
+                    </div>
+                  ) : (
+                    chatMessages.map((msg, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                            msg.role === 'user'
+                              ? 'bg-orange-500 text-white'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}
+                        >
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  {chatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t p-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                      placeholder="What are you in the mood for?"
+                      className="flex-1 p-3 border rounded-lg"
+                      disabled={chatLoading}
+                    />
+                    <button
+                      onClick={sendChatMessage}
+                      disabled={chatLoading || !chatInput.trim()}
+                      className="px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 p-4">
+              <div className="max-w-6xl mx-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white rounded-full p-3 shadow-lg">
+                      <Utensils className="w-8 h-8 text-orange-500" />
+                    </div>
+                    {view === 'home' && (
+                      <h1 className="text-2xl font-bold text-gray-800">Yummy Food Time</h1>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="bg-white rounded-full px-4 py-2 shadow flex items-center gap-2">
+                      <User className="w-5 h-5 text-gray-600" />
+                      <select
+                        value={currentUser}
+                        onChange={(e) => setCurrentUser(e.target.value)}
+                        className="bg-transparent font-semibold cursor-pointer outline-none"
+                      >
+                        <option value="Collin">Collin</option>
+                        <option value="Emily">Emily</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {view === 'home' && renderHome()}
+                {view === 'upload' && renderUpload()}
+                {view === 'review-order' && renderReviewOrder()}
+                {view === 'history' && renderHistory()}
+                {view === 'detail' && renderDetail()}
+                {view === 'chat' && renderChat()}
+              </div>
+            </div>
+          );
+        };
+
+        ReactDOM.render(<YummyFoodTime />, document.getElementById('root'));
+    </script>
+</body>
+</html>
