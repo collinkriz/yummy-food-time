@@ -180,14 +180,7 @@
                 reader.readAsDataURL(file);
               });
 
-              // Use a CORS proxy to make the request
-              const proxyUrl = 'https://api.allorigins.win/raw?url=';
-              const apiUrl = 'https://api.anthropic.com/v1/messages';
-              
-              // Determine the API endpoint
-              // Check if we're on Vercel by testing the API endpoint
               const apiEndpoint = '/api/anthropic';
-              
               console.log('Using API endpoint:', apiEndpoint);
               
               const requestBody = {
@@ -249,10 +242,6 @@ JSON format (respond with this exact structure):
 
               console.log('API Response status:', response.status);
               console.log('API Response ok:', response.ok);
-
-              if (response.status === 404) {
-                throw new Error('API_PROXY_NOT_FOUND: The API proxy endpoint is not available. This app must be deployed to Vercel to work. Please follow the DEPLOYMENT.md instructions.');
-              }
 
               if (!response.ok) {
                 const errorData = await response.json();
@@ -353,24 +342,13 @@ JSON format (respond with this exact structure):
               // Show more detailed error message
               let errorMessage = '';
               
-              if (error.message.includes('API_PROXY_NOT_FOUND')) {
-                errorMessage = '⚠️ DEPLOYMENT REQUIRED\n\n';
-                errorMessage += 'The image extraction feature requires the app to be deployed to Vercel.\n\n';
-                errorMessage += 'You are currently viewing this on:\n';
-                errorMessage += window.location.hostname + '\n\n';
-                errorMessage += 'To use image extraction:\n';
-                errorMessage += '1. Deploy to Vercel (see DEPLOYMENT.md)\n';
-                errorMessage += '2. Make sure the api/ folder is included\n';
-                errorMessage += '3. Access via your Vercel URL\n\n';
-                errorMessage += 'For now, you can enter orders manually.';
-              } else if (error.message.includes('API Error')) {
+              if (error.message.includes('API Error')) {
                 errorMessage = error.message;
               } else if (error.message.includes('parse') || error.message.includes('JSON')) {
                 errorMessage = 'Failed to extract order information.\n\n';
                 errorMessage += 'The AI response could not be parsed. ';
                 errorMessage += 'This usually means the image is unclear or not a food order screenshot. ';
                 errorMessage += '\n\nTip: Try a clearer image or enter manually.';
-                errorMessage += '\n\nFor debugging: Check the browser console (F12) and look for "Extracted text" to see what Claude returned.';
               } else if (error.message.includes('clear enough')) {
                 errorMessage = error.message;
               } else {
