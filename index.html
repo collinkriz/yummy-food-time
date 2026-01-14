@@ -185,11 +185,10 @@
               const apiUrl = 'https://api.anthropic.com/v1/messages';
               
               // Determine the API endpoint
-              // In production on Vercel, use /api/anthropic
-              // For local testing or if deployed elsewhere, update this URL
-              const apiEndpoint = window.location.hostname.includes('vercel.app') || window.location.hostname === 'localhost'
-                ? '/api/anthropic'
-                : 'https://your-app-name.vercel.app/api/anthropic'; // Replace with your actual Vercel URL
+              // Check if we're on Vercel by testing the API endpoint
+              const apiEndpoint = '/api/anthropic';
+              
+              console.log('Using API endpoint:', apiEndpoint);
               
               const requestBody = {
                 apiKey: apiKey,
@@ -251,6 +250,10 @@ JSON format (respond with this exact structure):
               console.log('API Response status:', response.status);
               console.log('API Response ok:', response.ok);
 
+              if (response.status === 404) {
+                throw new Error('API_PROXY_NOT_FOUND: The API proxy endpoint is not available. This app must be deployed to Vercel to work. Please follow the DEPLOYMENT.md instructions.');
+              }
+
               if (!response.ok) {
                 const errorData = await response.json();
                 console.error('API Error Response:', errorData);
@@ -258,10 +261,17 @@ JSON format (respond with this exact structure):
               }
 
               const data = await response.json();
-              console.log('API Response data:', data);
+              console.log('=== FULL API RESPONSE ===');
+              console.log('Response structure:', JSON.stringify(data, null, 2));
+              console.log('Content array:', data.content);
+              console.log('Content types:', data.content?.map(c => c.type));
               
               const text = data.content.find(c => c.type === 'text')?.text || '';
-              console.log('Extracted text:', text);
+              console.log('=== EXTRACTED TEXT ===');
+              console.log(text);
+              console.log('=== TEXT LENGTH ===', text.length);
+              console.log('=== FIRST 500 CHARS ===');
+              console.log(text.substring(0, 500));
               
               // Try multiple parsing strategies
               let extracted = null;
@@ -338,26 +348,57 @@ JSON format (respond with this exact structure):
               }
             } catch (error) {
               console.error('Extraction error:', error);
+              console.error('Full error details:', error.stack);
               
               // Show more detailed error message
-              let errorMessage = 'Failed to extract order information. ';
+              let errorMessage = '';
               
-              if (error.message.includes('API Error')) {
-                errorMessage += error.message;
+              if (error.message.includes('API_PROXY_NOT_FOUND')) {
+                errorMessage = '⚠️ DEPLOYMENT REQUIRED\n\n';
+                errorMessage += 'The image extraction feature requires the app to be deployed to Vercel.\n\n';
+                errorMessage += 'You are currently viewing this on:\n';
+                errorMessage += window.location.hostname + '\n\n';
+                errorMessage += 'To use image extraction:\n';
+                errorMessage += '1. Deploy to Vercel (see DEPLOYMENT.md)\n';
+                errorMessage += '2. Make sure the api/ folder is included\n';
+                errorMessage += '3. Access via your Vercel URL\n\n';
+                errorMessage += 'For now, you can enter orders manually.';
+              } else if (error.message.includes('API Error')) {
+                errorMessage = error.message;
               } else if (error.message.includes('parse') || error.message.includes('JSON')) {
+                errorMessage = 'Failed to extract order information.\n\n';
                 errorMessage += 'The AI response could not be parsed. ';
                 errorMessage += 'This usually means the image is unclear or not a food order screenshot. ';
-                errorMessage += 'Please try a clearer image or enter manually.';
+                errorMessage += '\n\nTip: Try a clearer image or enter manually.';
+                errorMessage += '\n\nFor debugging: Check the browser console (F12) and look for "Extracted text" to see what Claude returned.';
               } else if (error.message.includes('clear enough')) {
-                errorMessage += error.message;
+                errorMessage = error.message;
               } else {
+                errorMessage = 'Failed to extract order information.\n\n';
                 errorMessage += 'Please check your API key and internet connection, then try again.';
               }
               
-              alert(errorMessage);
+              if (confirm(errorMessage + '\n\n─────────────────\nClick OK to enter this order manually, or Cancel to try again.')) {
+                // Go to manual entry
+                setNewOrder({
+                  id: Date.now().toString(),
+                  restaurant: '',
+                  platform: '',
+                  orderDate: new Date().toISOString().split('T')[0],
+                  location: '',
+                  items: [{ id: '1', name: '', price: 0, rating: 0, notes: '' }],
+                  subtotal: 0,
+                  tax: 0,
+                  deliveryFee: 0,
+                  tip: 0,
+                  total: 0,
+                  addedBy: currentUser
+                });
+                setUploadedImage(null);
+                setView('review-order');
+              }
               
-              // Keep the image visible for retry
-              // setUploadedImage(null);
+              // Keep the image visible for retry if they clicked cancel
             } finally {
               setExtracting(false);
             }
@@ -427,9 +468,7 @@ JSON format (respond with this exact structure):
                 addedBy: order.addedBy
               }));
 
-              const apiEndpoint = window.location.hostname.includes('vercel.app') || window.location.hostname === 'localhost'
-                ? '/api/anthropic'
-                : 'https://your-app-name.vercel.app/api/anthropic'; // Replace with your actual Vercel URL
+              const apiEndpoint = '/api/anthropic';
 
               const response = await fetch(apiEndpoint, {
                 method: 'POST',
