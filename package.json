@@ -1,0 +1,8 @@
+{
+  "name": "yummy-food-time",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest"
+  }
+}
