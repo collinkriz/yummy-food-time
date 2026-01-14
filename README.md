@@ -48,17 +48,40 @@ You can find the exact URL on the GitHub Pages settings page.
 
 ## How to Use
 
+### First Time Setup: Add Your API Key
+
+To use the AI features (image extraction and chatbot), you need an Anthropic API key:
+
+1. **Get an API Key:**
+   - Go to [console.anthropic.com](https://console.anthropic.com)
+   - Sign up or log in
+   - Click on "API Keys" in the left sidebar
+   - Click "Create Key"
+   - Copy the key (it starts with `sk-ant-`)
+
+2. **Add the Key to Your App:**
+   - Open your Yummy Food Time app
+   - Click the ⚙️ settings icon in the top right
+   - Paste your API key
+   - Click "Save Key"
+
+**Important:** Your API key is stored locally in your browser and is only sent to Anthropic's servers. It's never sent anywhere else.
+
+**Pricing:** Anthropic's API has very affordable pricing. The image extraction and chatbot features cost only a few cents per use. You can check current pricing at [anthropic.com/pricing](https://www.anthropic.com/pricing).
+
 ### Upload an Order
 
-1. Click "Upload Order" on the home screen
-2. Take a screenshot of your order from DoorDash, Uber Eats, or any restaurant app
-3. Upload the image - the app will automatically extract:
-   - Restaurant name
-   - Order platform
-   - Items and prices
-   - Total cost
-4. Review and edit the details if needed
-5. Click "Save Order"
+1. Click "Upload Order" (or "Add New Order") on the home screen
+2. **Option A - AI Extraction (Requires API Key):**
+   - Click "Click to upload" 
+   - Select a screenshot of your order from DoorDash, Uber Eats, or any restaurant app
+   - The AI will automatically extract all the details
+   - Review and edit if needed
+   - Click "Save Order"
+3. **Option B - Manual Entry:**
+   - Click "Enter Order Manually"
+   - Fill in restaurant, platform, items, and prices
+   - Click "Save Order"
 
 ### Rate & Add Notes
 
@@ -86,10 +109,17 @@ Click the user dropdown in the top right to toggle between Collin and Emily.
 
 ## Troubleshooting
 
+### "API Key Required" or Features Not Working
+- Click the ⚙️ settings icon and add your Anthropic API key
+- Make sure your API key starts with `sk-ant-`
+- Check that you have credits in your Anthropic account
+
 ### Images Not Uploading
-- Make sure you're using a supported image format (JPG, PNG)
+- Make sure you've added an API key (see setup above)
+- Use supported image formats (JPG, PNG)
 - Try using a screenshot rather than a photo of a screen
 - Ensure the image is clear and readable
+- Check your Anthropic API credits at [console.anthropic.com](https://console.anthropic.com)
 
 ### Data Not Saving
 - Check that you have a stable internet connection
