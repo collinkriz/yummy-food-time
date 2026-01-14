@@ -2,48 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Yummy Food Time</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 font-sans antialiased">
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // Icons
-        const Camera = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>;
-        const MessageCircle = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
-        const Utensils = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>;
-        const UserIcon = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+        // --- Icons ---
+        const MapPin = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>;
+        const ExternalLink = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>;
+        const Search = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>;
 
         const YummyFoodTime = () => {
           const [currentUser, setCurrentUser] = useState('Collin');
-          const [orders, setOrders] = useState([]);
+          const [orders, setOrders] = useState(JSON.parse(localStorage.getItem('yummy-orders') || '[]'));
           const [view, setView] = useState('home');
           const [extracting, setExtracting] = useState(false);
           const [chatMessages, setChatMessages] = useState([]);
           const [chatInput, setChatInput] = useState('');
-          const [chatLoading, setChatLoading] = useState(false);
-          const [apiKey, setApiKey] = useState(localStorage.getItem('anthropic-api-key') || '');
-          const [showApiKeyModal, setShowApiKeyModal] = useState(!localStorage.getItem('anthropic-api-key'));
+          const [searchMode, setSearchMode] = useState('history'); // 'history' or 'web'
 
-          useEffect(() => {
-            const savedOrders = localStorage.getItem('yummy-orders');
-            if (savedOrders) setOrders(JSON.parse(savedOrders));
-          }, []);
+          const saveOrders = (newOrders) => {
+            setOrders(newOrders);
+            localStorage.setItem('yummy-orders', JSON.stringify(newOrders));
+          };
 
           const handleImageUpload = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
             setExtracting(true);
             try {
-              const base64 = await new Promise((resolve) => {
+              const base64 = await new Promise(r => {
                 const reader = new FileReader();
-                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onload = () => r(reader.result.split(',')[1]);
                 reader.readAsDataURL(file);
               });
 
@@ -51,23 +48,33 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  apiKey,
                   model: 'claude-3-7-sonnet-20250219',
                   max_tokens: 2000,
                   messages: [{ 
                     role: 'user', 
                     content: [
                         { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
-                        { type: 'text', text: "Extract food order details. Return ONLY JSON: {restaurant, platform, orderDate, items: [{name, price}], total}" }
+                        { type: 'text', text: "Extract receipt details from this DoorDash, Uber Eats, or In-App (like Chipotle/Panera) order. Return ONLY JSON: {restaurant, platform, orderDate, location, items: [{name, price}], subtotal, total}" }
                     ] 
                   }]
                 })
               });
+
               const data = await response.json();
-              alert("Order Extracted!");
+              const text = data.content[0].text;
+              const parsed = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+              
+              const newOrder = {
+                ...parsed,
+                id: Date.now().toString(),
+                addedBy: currentUser,
+                items: parsed.items.map(i => ({ ...i, id: Math.random().toString(36).substr(2, 9), rating: 0, notes: '', eater: currentUser }))
+              };
+              
+              saveOrders([...orders, newOrder]);
               setView('history');
-            } catch (error) {
-              alert('Error processing receipt.');
+            } catch (e) {
+              alert('Cloud extraction failed. Please try again.');
             } finally { setExtracting(false); }
           };
 
@@ -76,110 +83,111 @@
             const userMsg = { role: 'user', content: chatInput };
             setChatMessages(prev => [...prev, userMsg]);
             setChatInput('');
-            setChatLoading(true);
             try {
               const response = await fetch('/api/anthropic', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  apiKey,
                   model: 'claude-3-7-sonnet-20250219',
-                  max_tokens: 1000,
-                  messages: [{ role: 'user', content: chatInput }]
+                  messages: [{ 
+                    role: 'user', 
+                    content: `Context: Search Mode is ${searchMode}. History: ${JSON.stringify(orders)}. User: ${chatInput}` 
+                  }]
                 })
               });
               const data = await response.json();
-              const botText = data.content?.[0]?.text || "No response received.";
-              setChatMessages(prev => [...prev, { role: 'assistant', content: botText }]);
+              setChatMessages(prev => [...prev, { role: 'assistant', content: data.content[0].text }]);
             } catch (e) {
-              setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error connecting to AI.' }]);
-            } finally { setChatLoading(false); }
+              setChatMessages(prev => [...prev, { role: 'assistant', content: 'Connection lost.' }]);
+            }
           };
 
           return (
-            <div className="min-h-screen p-4 max-w-5xl mx-auto">
-              {showApiKeyModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white p-8 rounded-2xl max-w-sm w-full shadow-2xl">
-                    <h3 className="text-xl font-bold mb-4">Enter API Key</h3>
-                    <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="sk-ant-..." className="w-full p-3 border rounded-lg mb-4" />
-                    <button onClick={() => { localStorage.setItem('anthropic-api-key', apiKey); setShowApiKeyModal(false); }} className="w-full py-3 bg-orange-500 text-white rounded-lg font-bold">Save Key</button>
-                  </div>
-                </div>
-              )}
-
-              <nav className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
-                  <Utensils className="text-orange-500 w-8 h-8" /><span className="text-xl font-black">YUMMY</span>
-                </div>
-                <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border">
-                  <UserIcon className="w-4 h-4 text-gray-400" />
-                  <span className="font-bold">{currentUser}</span>
+            <div className="min-h-screen pb-20 bg-gray-50">
+              <nav className="p-4 bg-white border-b flex justify-between items-center sticky top-0 z-20">
+                <span className="font-black text-orange-500">YUMMY</span>
+                <div className="flex bg-gray-100 p-1 rounded-full text-[10px] font-black uppercase tracking-tighter">
+                  <button onClick={() => setCurrentUser('Collin')} className={`px-4 py-2 rounded-full ${currentUser === 'Collin' ? 'bg-white shadow text-orange-600' : 'text-gray-400'}`}>Collin</button>
+                  <button onClick={() => setCurrentUser('Emily')} className={`px-4 py-2 rounded-full ${currentUser === 'Emily' ? 'bg-white shadow text-pink-600' : 'text-gray-400'}`}>Emily</button>
                 </div>
               </nav>
 
-              {view === 'home' && (
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-3xl p-10 text-white shadow-lg">
-                    <h1 className="text-4xl font-bold mb-2">🍕 Yummy Food Time</h1>
-                    <p className="text-lg opacity-90">Manage your group orders and split bills instantly.</p>
+              <main className="p-4 max-w-2xl mx-auto space-y-6">
+                {view === 'home' && (
+                  <div className="space-y-4">
+                    <div className="bg-black rounded-3xl p-8 text-white">
+                      <h2 className="text-4xl font-black italic">CHOOSE YOUR MEAL.</h2>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col items-center gap-2">
+                        <span className="bg-orange-100 p-3 rounded-full text-orange-600 font-bold uppercase text-[10px]">Step 1</span>
+                        <span className="font-black text-xs">SCAN RECEIPT</span>
+                        <input type="file" className="hidden" onChange={handleImageUpload} />
+                      </label>
+                      <button onClick={() => setView('chat')} className="bg-white p-6 rounded-3xl border border-gray-100 flex flex-col items-center gap-2">
+                        <span className="bg-pink-100 p-3 rounded-full text-pink-600 font-bold uppercase text-[10px]">Step 2</span>
+                        <span className="font-black text-xs">CHAT WITH AI</span>
+                      </button>
+                    </div>
+                    <button onClick={() => setView('history')} className="w-full bg-white p-5 rounded-3xl border font-black text-xs text-gray-400">VIEW ALL ORDER HISTORY</button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <label className="bg-white rounded-2xl p-8 shadow-sm border hover:shadow-md transition-shadow flex flex-col items-center cursor-pointer">
-                      <Camera className="w-12 h-12 text-orange-500 mb-4" />
-                      <h3 className="text-xl font-bold">Upload Receipt</h3>
-                      <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
-                    </label>
-                    <button onClick={() => setView('chat')} className="bg-white rounded-2xl p-8 shadow-sm border hover:shadow-md transition-shadow flex flex-col items-center">
-                      <MessageCircle className="w-12 h-12 text-pink-500 mb-4" />
-                      <h3 className="text-xl font-bold">Ask Assistant</h3>
-                    </button>
-                    <button onClick={() => setView('history')} className="bg-white rounded-2xl p-8 shadow-sm border hover:shadow-md transition-shadow flex flex-col items-center">
-                      <Utensils className="w-12 h-12 text-purple-500 mb-4" />
-                      <h3 className="text-xl font-bold">History</h3>
-                    </button>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {view === 'chat' && (
-                <div className="max-w-2xl mx-auto h-[600px] bg-white rounded-3xl shadow-xl flex flex-col border overflow-hidden">
-                  <div className="p-4 border-b bg-orange-50 flex justify-between">
-                    <span className="font-bold">AI Food Assistant</span>
-                    <button onClick={() => setView('home')} className="text-sm text-orange-600 font-bold">Exit</button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                    {chatMessages.map((m, i) => (
-                      <div key={i} className={`p-4 rounded-2xl max-w-[80%] ${m.role === 'user' ? 'bg-orange-500 text-white ml-auto' : 'bg-gray-100'}`}>
-                        {m.content}
+                {view === 'history' && (
+                  <div className="space-y-4">
+                    <button onClick={() => setView('home')} className="text-[10px] font-black uppercase text-gray-400">← Back Home</button>
+                    {orders.slice().reverse().map(order => (
+                      <div key={order.id} className="bg-white rounded-3xl border p-6 space-y-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-black text-xl uppercase italic leading-none">{order.restaurant}</h3>
+                            <div className="flex gap-2 mt-2">
+                                <a href={`https://www.google.com/maps/search/${order.restaurant}+${order.location || ''}`} target="_blank" className="flex items-center gap-1 text-[10px] font-bold text-blue-500 uppercase border rounded-full px-2 py-1"><MapPin className="w-3 h-3"/> Location</a>
+                                <a href={`https://www.google.com/search?q=${order.restaurant}+menu`} target="_blank" className="flex items-center gap-1 text-[10px] font-bold text-green-500 uppercase border rounded-full px-2 py-1"><ExternalLink className="w-3 h-3"/> Menu</a>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="space-y-2 pt-4 border-t border-dashed">
+                          {order.items.map(item => (
+                            <div key={item.id} className="bg-gray-50 p-4 rounded-2xl flex justify-between items-center">
+                              <div><p className="font-bold text-xs uppercase">{item.name}</p><p className="text-[10px] text-gray-400">Eaten by {item.eater}</p></div>
+                              <div className="text-orange-500 font-black italic">${item.price}</div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
-                    {chatLoading && <div className="text-gray-400 animate-pulse italic">Thinking...</div>}
                   </div>
-                  <div className="p-4 border-t flex gap-2">
-                    <input className="flex-1 p-3 border rounded-xl outline-none focus:ring-2 focus:ring-orange-500" placeholder="Ask about your orders..." value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendChatMessage()} />
-                    <button onClick={sendChatMessage} className="px-6 bg-orange-500 text-white rounded-xl font-bold">Send</button>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {view === 'history' && (
-                <div className="space-y-4">
-                  <button onClick={() => setView('home')} className="text-orange-500 font-bold">← Back</button>
-                  <h2 className="text-2xl font-bold">Order History</h2>
-                  {orders.length === 0 ? <p className="text-gray-400">No orders saved yet.</p> : orders.map(o => (
-                    <div key={o.id} className="bg-white p-5 rounded-xl border flex justify-between items-center">
-                      <div><h4 className="font-bold">{o.restaurant}</h4><p className="text-gray-400 text-sm">{o.orderDate}</p></div>
-                      <div className="font-black">${o.total}</div>
+                {view === 'chat' && (
+                  <div className="flex flex-col h-[70vh]">
+                    <div className="flex justify-between items-center mb-4">
+                        <button onClick={() => setView('home')} className="text-[10px] font-black uppercase text-gray-400">← Exit</button>
+                        <div className="flex bg-gray-200 p-1 rounded-full">
+                            <button onClick={() => setSearchMode('history')} className={`px-3 py-1 rounded-full text-[10px] font-black ${searchMode === 'history' ? 'bg-black text-white' : 'text-gray-500'}`}>HISTORY</button>
+                            <button onClick={() => setSearchMode('web')} className={`px-3 py-1 rounded-full text-[10px] font-black ${searchMode === 'web' ? 'bg-black text-white' : 'text-gray-500'}`}>EXPLORE</button>
+                        </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="flex-1 bg-white rounded-3xl border flex flex-col overflow-hidden">
+                      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        {chatMessages.map((m, i) => (
+                          <div key={i} className={`p-4 rounded-2xl text-xs font-bold leading-relaxed ${m.role === 'user' ? 'bg-orange-500 text-white ml-auto max-w-[80%]' : 'bg-gray-100 text-black max-w-[90%]'}`}>{m.content}</div>
+                        ))}
+                      </div>
+                      <div className="p-4 border-t flex gap-2">
+                        <input className="flex-1 p-3 bg-gray-50 border-none rounded-2xl text-xs font-black uppercase tracking-tight outline-none" placeholder="I'm feeling like..." value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendChatMessage()} />
+                        <button onClick={sendChatMessage} className="bg-black text-white px-6 rounded-2xl text-[10px] font-black">SEND</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </main>
 
               {extracting && (
-                <div className="fixed inset-0 bg-white/90 flex flex-col items-center justify-center z-50">
-                  <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-orange-500 mb-4"></div>
-                  <p className="text-xl font-black text-orange-500">Extracting Order Details...</p>
+                <div className="fixed inset-0 bg-white/95 z-50 flex flex-col items-center justify-center p-10 text-center">
+                  <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+                  <h2 className="text-2xl font-black italic">EXTRACTING DATA...</h2>
                 </div>
               )}
             </div>
