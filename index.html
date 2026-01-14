@@ -35,24 +35,17 @@
                         const response = await fetch('/api/anthropic', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                model: "claude-3-5-sonnet-20240620",
-                                max_tokens: 1024,
-                                messages: [{
-                                    role: "user",
-                                    content: [
-                                        { type: "text", text: "Extract the items and total from this receipt and return it as a simple list." },
-                                        { type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64Image } }
-                                    ]
-                                }]
-                            })
+                            // Only send the image; backend handles the prompt/model
+                            body: JSON.stringify({ image: base64Image }) 
                         });
 
                         const data = await response.json();
+
+                        // Backend returns full Anthropic response object
                         if (data.content && data.content[0]) {
                             setResult(data.content[0].text);
                         } else {
-                            throw new Error("No data returned from AI");
+                            throw new Error("Invalid response format from AI");
                         }
                     } catch (err) {
                         console.error("Extraction Failed:", err);
